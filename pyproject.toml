@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "faebot"
+version = "2.0.0"
+description = "transfaerie's sister a bot who is also a faerie"
+authors = ["transfaeries <contact@transfaerie.com>"]
+license = "Mozilla Public License 2.0"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+openai = "^0.20.0"
+twitter = "^1.19.3"
+wandb = "^0.12.20"
+
+[tool.poetry.dev-dependencies]
+mypy = "^0.961"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
