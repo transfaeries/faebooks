@@ -1,5 +1,6 @@
 ## Good Morning, welcome to faebot
 # Faebot's is a bot who is also a faerie
+#Faebot uses Open.ai gpt to generate tweets as well as have conversations on twitter
 
 import os
 import time
@@ -27,7 +28,7 @@ t = Twitter(
     auth=OAuth(token, token_secret, api_key, api_secret))
 
 # This will seed the model:
-tweet_prompt = "The following is a tweet by faebot, a bot that is also a faerie:"
+tweet_prompt = "The following is a tweet by faebot_01, a bot that is also a faerie:"
 
 #Prompts Open AI for a tweet
 def generate(prompt: str = "") -> str:
@@ -44,11 +45,15 @@ def generate(prompt: str = "") -> str:
     return response["choices"][0]["text"].strip()
 
 if __name__=="__main__":
-    while True:
-        message = generate(tweet_prompt)
-        logging.info("MESSAGE TO POST: "+message)
-        t.statuses.update(status=message)
-        # sleep for 5 mins to 2 hours before posting again
-        sleeptime=randrange(300,7200)
-        logging.info(f"sleeping for {sleeptime} seconds before posting again.")
-        time.sleep(sleeptime)
+    ## start a python thread for the main load of generating and posting tweets
+    
+   
+   
+    # while True:
+    #     message = generate(tweet_prompt)
+    #     logging.info("MESSAGE TO POST: "+message)
+    #     t.statuses.update(status=message)
+    #     # sleep for 5 mins to 2 hours before posting again
+    #     sleeptime=randrange(300,7200)
+    #     logging.info(f"sleeping for {sleeptime} seconds before posting again.")
+    #     time.sleep(sleeptime)
