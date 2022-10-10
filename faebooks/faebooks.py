@@ -2,6 +2,8 @@
 # Faebot's is a bot who is also a faerie
 #Faebot uses Open.ai gpt to generate tweets as well as have conversations on twitter
 
+# Faebot will post a new tweet at random intervals during the day 
+
 import os
 import sys
 import time
@@ -84,7 +86,7 @@ class Faebooks:
             logging.info(
                 "started faebot @ faebot_01"
             )
-            
+    
 
 
     def sync_signal_handler(self, *_: Any) -> None:
@@ -101,18 +103,17 @@ class Faebooks:
         if self.sigints >= 3:
             sys.exit(1)
 
+    async def async_shutdown(self) -> None:
+        """Shutdown the bot"""
+        logging.info("shutting down")
+        await self.twitter.close()
+        await self.session.close()
+        sys.exit(0)
+
+    
+
 
 
 if __name__=="__main__":
-    ## start a python thread for the main load of generating and posting tweets
-    
-   
-   
-    # while True:
-    #     message = generate(tweet_prompt)
-    #     logging.info("MESSAGE TO POST: "+message)
-    #     t.statuses.update(status=message)
-    #     # sleep for 5 mins to 2 hours before posting again
-    #     sleeptime=randrange(300,7200)
-    #     logging.info(f"sleeping for {sleeptime} seconds before posting again.")
-    #     time.sleep(sleeptime)
+    faebot = Faebooks()
+    asyncio.run(faebot.start())
