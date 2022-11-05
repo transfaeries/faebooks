@@ -23,7 +23,8 @@ logging.basicConfig(
 
 
 # This will seed the model:
-tweet_prompt = "The following is a tweet by faebot_01, a bot that is also a faerie:"
+tweet_prompt = ""
+model = os.getenv("MODEL_NAME", "curie")
 
 
 
@@ -35,7 +36,6 @@ class Faebooks:
         token_secret = os.getenv("TWITTER_ACCESS_SECRET","")
         api_key = os.getenv("TWITTER_API_KEY","")
         api_secret = os.getenv("TWITTER_API_SECRET","")
-        self.model = os.getenv("MODEL_NAME", "curie")
 
         #set up the twitter connection
         self.twitter = Twitter(
@@ -89,19 +89,19 @@ class Faebooks:
     
 
 
-    def sync_signal_handler(self, *_: Any) -> None:
-        """Try to start async_shutdown and/or just sys.exit"""
-        logging.info("handling sigint. sigints: %s", self.sigints)
-        self.sigints += 1
-        self.exiting = True
-        try:
-            loop = asyncio.get_running_loop()
-            logging.info("got running loop, scheduling async_shutdown")
-            asyncio.run_coroutine_threadsafe(self.async_shutdown(), loop)
-        except RuntimeError:
-            asyncio.run(self.async_shutdown())
-        if self.sigints >= 3:
-            sys.exit(1)
+    # def sync_signal_handler(self, *_: Any) -> None:
+    #     """Try to start async_shutdown and/or just sys.exit"""
+    #     logging.info("handling sigint. sigints: %s", self.sigints)
+    #     self.sigints += 1
+    #     self.exiting = True
+    #     try:
+    #         loop = asyncio.get_running_loop()
+    #         logging.info("got running loop, scheduling async_shutdown")
+    #         asyncio.run_coroutine_threadsafe(self.async_shutdown(), loop)
+    #     except RuntimeError:
+    #         asyncio.run(self.async_shutdown())
+    #     if self.sigints >= 3:
+    #         sys.exit(1)
 
     async def async_shutdown(self) -> None:
         """Shutdown the bot"""
