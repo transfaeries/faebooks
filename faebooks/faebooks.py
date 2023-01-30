@@ -112,8 +112,9 @@ class Faebooks:
     async def async_shutdown(self) -> None:
         """Shutdown the bot"""
         logging.info("shutting down")
-        await self.twitter.close()
-        await self.session.close()
+        tasks = [ t for t in asyncio.all_tasks() if t is not asyncio.current_task() ]
+        for task in tasks:
+            task.cancel()
         sys.exit(0)
 
     
