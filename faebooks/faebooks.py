@@ -41,10 +41,13 @@ class Faebooks:
         self.twitter = Twitter(
             auth=OAuth(token, token_secret, api_key, api_secret))
 
+        #additional setup
+        self.exiting = False
+
 
 
     #Prompts Open AI for a tweet
-    def generate(prompt: str = "") -> str:
+    async def generate(self, prompt: str = "") -> str:
         response = openai.Completion.create(  # type: ignore
             engine=model,
             prompt=prompt,
@@ -59,7 +62,8 @@ class Faebooks:
 
     async def tweet(self) -> None:
         """This will generate a tweet based on the prompt and post it to twitter"""
-        tweet = self.generate(prompt=tweet_prompt)
+        # import pdb; pdb.set_trace()
+        tweet = await self.generate(tweet_prompt)
         logging.info(f"Tweeting: {tweet}")
         self.twitter.statuses.update(status=tweet)
 
@@ -73,15 +77,17 @@ class Faebooks:
         restart_count = 0
         max_backoff = 15
         while self.sigints == 0 and not self.exiting:
-            # try:
-            #     await self.tweet()
-            #     await asyncio.sleep(60 * 60 * 24)
-            # except Exception as e:
-            #     logging.error(e)
-            #     backoff = 2 ** restart_count
-            #     logging.info("backing off for %s seconds", backoff)
-            #     await asyncio.sleep(backoff)
-            #     restart_count += 1
+            try:
+                await self.tweet()
+                sleeptime=randrange(3000,17200)
+                logging.info(f"sleeping for {sleeptime} seconds before posting again.")
+                await asyncio.sleep(sleeptime)
+            except Exception as e:
+                logging.error(e)
+                backoff = 2 ** restart_count
+                logging.info("backing off for %s seconds", backoff)
+                await asyncio.sleep(backoff)
+                restart_count += 1
 
             logging.info(
                 "started faebot @ faebot_01"
@@ -89,19 +95,19 @@ class Faebooks:
     
 
 
-    # def sync_signal_handler(self, *_: Any) -> None:
-    #     """Try to start async_shutdown and/or just sys.exit"""
-    #     logging.info("handling sigint. sigints: %s", self.sigints)
-    #     self.sigints += 1
-    #     self.exiting = True
-    #     try:
-    #         loop = asyncio.get_running_loop()
-    #         logging.info("got running loop, scheduling async_shutdown")
-    #         asyncio.run_coroutine_threadsafe(self.async_shutdown(), loop)
-    #     except RuntimeError:
-    #         asyncio.run(self.async_shutdown())
-    #     if self.sigints >= 3:
-    #         sys.exit(1)
+    def sync_signal_handler(self, *_: any) -> None:
+        """Try to start async_shutdown and/or just sys.exit"""
+        logging.info("handling sigint. sigints: %s", self.sigints)
+        self.sigints += 1
+        self.exiting = True
+        try:
+            loop = asyncio.get_running_loop()
+            logging.info("got running loop, scheduling async_shutdown")
+            asyncio.run_coroutine_threadsafe(self.async_shutdown(), loop)
+        except RuntimeError:
+            asyncio.run(self.async_shutdown())
+        if self.sigints >= 3:
+            sys.exit(1)
 
     async def async_shutdown(self) -> None:
         """Shutdown the bot"""
