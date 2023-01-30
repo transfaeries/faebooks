@@ -27,7 +27,7 @@ t = Twitter(
     auth=OAuth(token, token_secret, api_key, api_secret))
 
 # This will seed the model:
-tweet_prompt = "The following is a tweet by faebot, a bot that is also a faerie:"
+tweet_prompt = ""
 
 #Prompts Open AI for a tweet
 def generate(prompt: str = "") -> str:
@@ -49,6 +49,6 @@ if __name__=="__main__":
         logging.info("MESSAGE TO POST: "+message)
         t.statuses.update(status=message)
         # sleep for 5 mins to 2 hours before posting again
-        sleeptime=randrange(300,7200)
+        sleeptime=randrange(3000,17200)
         logging.info(f"sleeping for {sleeptime} seconds before posting again.")
         time.sleep(sleeptime)
