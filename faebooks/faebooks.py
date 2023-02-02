@@ -1,8 +1,8 @@
 ## Good Morning, welcome to faebot
 # Faebot's is a bot who is also a faerie
-#Faebot uses Open.ai gpt to generate tweets as well as have conversations on twitter
+#Faebot uses Open.ai gpt to generate posts as well as have conversations
 
-# Faebot will post a new tweet at random intervals during the day 
+# Faebot will post a new post at random intervals during the day 
 
 import os
 import sys
@@ -10,6 +10,7 @@ import time
 import logging
 from random import randrange
 from twitter import *
+from mastodon import Mastodon
 import openai
 import asyncio
 import signal
@@ -23,7 +24,7 @@ logging.basicConfig(
 
 
 # This will seed the model:
-tweet_prompt = ""
+post_prompt = ""
 model = os.getenv("MODEL_NAME", "curie")
 
 
@@ -36,17 +37,26 @@ class Faebooks:
         token_secret = os.getenv("TWITTER_ACCESS_SECRET","")
         api_key = os.getenv("TWITTER_API_KEY","")
         api_secret = os.getenv("TWITTER_API_SECRET","")
+        masto_token = os.getenv("MASTO_ACCESS_TOKEN","")
+        masto_url = os.getenv("MASTO_BASE_URL","")
 
         #set up the twitter connection
         self.twitter = Twitter(
             auth=OAuth(token, token_secret, api_key, api_secret))
+        
+        #set up the mastodon connection
+        self.mastodon = Mastodon(
+            access_token=masto_token,
+            api_base_url=masto_url
+        )
 
         #additional setup
         self.exiting = False
+        self.sigints = 0
 
 
 
-    #Prompts Open AI for a tweet
+    #Prompts Open AI for a post
     async def generate(self, prompt: str = "") -> str:
         response = openai.Completion.create(  # type: ignore
             engine=model,
@@ -60,14 +70,12 @@ class Faebooks:
         )
         return response["choices"][0]["text"].strip()
 
-    async def tweet(self) -> None:
-        """This will generate a tweet based on the prompt and post it to twitter"""
-        # import pdb; pdb.set_trace()
-        tweet = await self.generate(tweet_prompt)
-        logging.info(f"Tweeting: {tweet}")
-        self.twitter.statuses.update(status=tweet)
-
-    sigints = 0
+    async def post(self) -> None:
+        """This will generate a post based on the prompt and post it to twitter and mastodon"""
+        post = await self.generate(post_prompt)
+        logging.info(f"posting: {post}")
+        self.twitter.statuses.update(status=post)
+        self.mastodon.toot(post)
 
     async def start(self) -> None:
         """This will start the asyncio running loop and set the signint handlers"""
@@ -75,16 +83,21 @@ class Faebooks:
         loop.add_signal_handler(signal.SIGINT, self.sync_signal_handler)
         loop.add_signal_handler(signal.SIGTERM, self.sync_signal_handler)
         restart_count = 0
-        max_backoff = 15
+        max_restarts = 15
         while self.sigints == 0 and not self.exiting:
             try:
-                await self.tweet()
+
+                await self.post()
                 sleeptime=randrange(3000,17200)
                 logging.info(f"sleeping for {sleeptime} seconds before posting again.")
                 await asyncio.sleep(sleeptime)
+
             except Exception as e:
                 logging.error(e)
                 backoff = 2 ** restart_count
+                if restart_count >= max_restarts:
+                    logging.error("max restarts reached, exiting")
+                    sys.exit(1)
                 logging.info("backing off for %s seconds", backoff)
                 await asyncio.sleep(backoff)
                 restart_count += 1
@@ -118,9 +131,6 @@ class Faebooks:
         sys.exit(0)
 
     
-
-
-
 if __name__=="__main__":
     faebot = Faebooks()
     asyncio.run(faebot.start())
