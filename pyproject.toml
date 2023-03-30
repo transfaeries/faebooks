@@ -10,10 +10,17 @@ python = "^3.10"
 openai = "^0.20.0"
 twitter = "^1.19.3"
 wandb = "^0.12.20"
+maya = "^0.6.1"
+mastodon-py = "^1.8.0"
 
 [tool.poetry.dev-dependencies]
 mypy = "^0.961"
 pdbpp = "^0.10.3"
+ipython = "^8.4.0"
+
+[tool.poetry.group.dev.dependencies]
+pip = "^22.3.1"
+black = "^23.1.0"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
