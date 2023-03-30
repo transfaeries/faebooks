@@ -1,5 +1,5 @@
-# faebot
-A conversational ML bot for mastodon, twitter, discord, signal, etc.
+# faeboiks
+A finetuned gpt twitter shitpost bot
 
 Deployment Workflow:
 
