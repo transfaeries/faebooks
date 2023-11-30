@@ -1,4 +1,4 @@
-# faeboiks
+# faebooks
 A finetuned gpt twitter shitpost bot
 
 Deployment Workflow:
